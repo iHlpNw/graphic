@@ -37,7 +37,7 @@ public class HelloApplication extends Application {
     private double turnX = 30; // Поворот по X
     private double turnY = 30; // Поворот по Y
     private double turnZ = 0;  // Поворот по Z
-    
+
 
     public void clear(GraphicsContext gc){
         gc.setFill(Color.WHITE);
@@ -129,6 +129,8 @@ public class HelloApplication extends Application {
         TextField movey = new TextField(String.valueOf(moveY));
         TextField movez = new TextField(String.valueOf(moveZ));
         TextField sizeText = new TextField(String.valueOf(size));
+        TextField tParam = new TextField(String.valueOf(tPower));
+        TextField sParam = new TextField(String.valueOf(sPower));
         Label tx = new Label("turn X");
         Label ty = new Label("turn Y");
         Label tz = new Label("turn Z");
@@ -136,6 +138,8 @@ public class HelloApplication extends Application {
         Label my = new Label("move Y");
         Label mz = new Label("move Z");
         Label sl = new Label("size");
+        Label tPar = new Label("t");
+        Label sPar = new Label("s");
 
         tx.setLayoutX(400);
         tx.setLayoutY(620);
@@ -151,6 +155,11 @@ public class HelloApplication extends Application {
         mz.setLayoutY(620);
         sl.setLayoutX(700);
         sl.setLayoutY(620);
+
+        tPar.setLayoutX(800);
+        tPar.setLayoutY(620);
+        sPar.setLayoutX(850);
+        sPar.setLayoutY(620);
 
         Button btn1 = new Button("press");
         btn1.setLayoutX(1280/2);
@@ -169,6 +178,22 @@ public class HelloApplication extends Application {
         movez.setLayoutY(640);
         sizeText.setLayoutX(700);
         sizeText.setLayoutY(640);
+        sizeText.setMaxWidth(50);
+        turnx.setMaxWidth(50);
+        turny.setMaxWidth(50);
+        turnz.setMaxWidth(50);
+        movex.setMaxWidth(50);
+        movey.setMaxWidth(50);
+        movez.setMaxWidth(50);
+        tParam.setMaxWidth(50);
+        tParam.setLayoutX(800);
+        tParam.setLayoutY(640);
+        sParam.setMaxWidth(50);
+        sParam.setLayoutX(850);
+        sParam.setLayoutY(640);
+
+
+
         btn1.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
@@ -179,13 +204,16 @@ public class HelloApplication extends Application {
                 moveX = Double.parseDouble(movex.getText());
                 moveY = Double.parseDouble(movey.getText());
                 moveZ = Double.parseDouble(movez.getText());
+                sPower = Double.parseDouble(sParam.getText());
+                tPower = Double.parseDouble(tParam.getText());
                 render3d(gc);
             }
         });
         root.getChildren().add(canvas);
         root.getChildren().addAll(
                 btn1, turnx, turny, turnz, movex, movey, movez, sizeText,
-                tx, ty, tz, mx, my, mz, sl
+                tx, ty, tz, mx, my, mz, sl,
+                tParam, sParam, tPar, sPar
                 );
         render3d(gc);
 
