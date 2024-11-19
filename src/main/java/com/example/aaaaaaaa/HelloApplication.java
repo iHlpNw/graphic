@@ -23,23 +23,21 @@ import java.util.Arrays;
 import java.io.IOException;
 
 public class HelloApplication extends Application {
-    private int A1 = 2;
-    private int B1 = 2;
-    private int R1 = 10; // R
-    private int dl = 5;
-    private double turnX = 15;
-    private double turnY = 15;
-    private double turnZ = 0;
-    private int size = 1;
-    private double moveX = 0;
-    private double moveZ = 200;
-    private double moveY = 700;
-    private double getC(double w, double m){
-        return(Math.signum(Math.cos(w))*Math.pow(Math.abs(Math.cos(w)), m));
-    }
-    private double getS(double w, double m){
-        return(Math.signum(Math.sin(w))*Math.pow(Math.abs(Math.sin(w)), m));
-    }
+    private int detailU = 60; // Количество точек по оси u
+    private int detailV = 60; // Количество точек по оси v
+    private double a = 100; // Параметр a
+    private double b = 100; // Параметр b
+    private double c = 40;  // Параметр c
+    private double sPower = 1; // Степень для u
+    private double tPower = 1; // Степень для v
+    private double size = 1; // Масштабирование
+    private double moveX = 300; // Смещение по X
+    private double moveY = 300; // Смещение по Y
+    private double moveZ = 0;   // Смещение по Z
+    private double turnX = 30; // Поворот по X
+    private double turnY = 30; // Поворот по Y
+    private double turnZ = 0;  // Поворот по Z
+    
 
     public void clear(GraphicsContext gc){
         gc.setFill(Color.WHITE);
@@ -48,76 +46,74 @@ public class HelloApplication extends Application {
     public void render3d(GraphicsContext gc){
         clear(gc);
         gc.setFill(Color.BLACK);
-        double A = A1;
-        double B = B1;
-        double R = R1;
-        double z = 0;
-        double y = 0;
-        double x = 0;
+        gc.setStroke(Color.BLACK);
 
-        double[] circleUpX = new double[60];
-        double[] circleUpY = new double[60];
-        double[] circleUpZ = new double[60];
+        double[][][] points = new double[detailU][detailV][3];
 
-        double[] circleDownX = new double[60];
-        double[] circleDownY = new double[60];
-        double[] circleDownZ = new double[60];
+        // Вычисление точек супертороида
+        double du = 2 * Math.PI / detailU;
+        double dv = 2 * Math.PI / detailV;
 
-        for(int l = 0; l < 4; l++){
+        for (int i = 0; i < detailU; i++) {
+            double u = i * du;
+            double cu = cosPower(u, sPower);
+            double su = sinPower(u, sPower);
 
-            z = l;
-            y = -R1;
-            double alpha = 0;
-            double dalpha = 2 * Math.PI / 60;
+            for (int j = 0; j < detailV; j++) {
+                double v = j * dv;
+                double cv = cosPower(v, tPower);
+                double sv = sinPower(v, tPower);
 
-            for (int i = 0; i < 60; i++){
-                //circleUpZ[i] = Math.signum(Math.sin())
-                circleUpZ[i] = l * R1;
-                circleUpY[i] = R1 * (1 + Math.abs(Math.sin(2 * alpha))) * Math.cos(alpha);
-                circleUpX[i] = R1 * (1 + Math.abs(Math.sin(2 * alpha))) * Math.sin(alpha);
-                alpha += dalpha;
+                double x = (a + c * cu) * cv;
+                double y = (b + c * cu) * sv;
+                double z = c * su;
+
+                // Применение вращения
+                double[] rotated = rotate(x, y, z);
+                points[i][j][0] = rotated[0] * size + moveX;
+                points[i][j][1] = rotated[1] * size + moveY;
+                points[i][j][2] = rotated[2] * size + moveZ;
             }
-
-            y = R1;
-            alpha = 0;
-
-            for (int i = 0; i < 60; i++)
-            {
-                circleUpZ[i] = l * R1;
-                circleUpY[i] = R1 * (1 + Math.abs(Math.sin(2 * alpha))) * Math.cos(alpha);
-                circleUpX[i] = R1 * (1 + Math.abs(Math.sin(2 * alpha))) * Math.sin(alpha);
-                alpha += dalpha;
-            }
-
-            for (int j = 0; j < 60; j++){
-                double sina = Math.sin(turnX);
-                double sinb = Math.sin(turnY);
-                double sinc = Math.sin(turnZ);
-                double cosa = Math.cos(turnX);
-                double cosb = Math.cos(turnY);
-                double cosc = Math.cos(turnZ);
-
-                x = circleUpX[j];
-                y = circleUpY[j];
-                z = circleUpZ[j];
-
-                circleUpX[j] = (x * cosb * cosc + y * sina * sinb * cosc - y * sinc * cosa + z * sinc * sina + z * sinb * cosa * cosc) * size * 10 + moveX;
-                circleUpY[j] = ((x * sinc * cosb + y * cosa * cosc + y * sinb * sina * sinc - z * sina * cosc + z * sinb * sinc * cosa) * size * 10) + dl + moveY;
-                circleUpZ[j] = (-x * sinb + y * cosb * sina + z * cosa * cosb) * size * 10 + moveZ; //263
-            }
-            if (l == 0){
-                circleDownX = Arrays.copyOf(circleUpX, 59);
-                circleDownY = Arrays.copyOf(circleUpY, 59);
-                circleDownZ = Arrays.copyOf(circleUpZ, 59);
-            }
-            for (int q = 0; q < 59; q++){
-                gc.strokeLine(circleUpY[q], circleUpZ[q], circleUpY[q + 1], circleUpZ[q + 1]);
-            }
-            gc.strokeLine(circleUpY[59], circleUpZ[59],circleUpY[0], circleUpZ[0]);
         }
-        for (int i = 0; i < 59; i++){
-            gc.strokeLine(circleDownY[i], circleDownZ[i], circleUpY[i], circleUpZ[i]);
+
+        // Рисование линий
+        for (int i = 0; i < detailU; i++) {
+            for (int j = 0; j < detailV; j++) {
+                int nextI = (i + 1) % detailU;
+                int nextJ = (j + 1) % detailV;
+
+                // Соединяем горизонтальные и вертикальные линии
+                drawLine(gc, points[i][j], points[nextI][j]);
+                drawLine(gc, points[i][j], points[i][nextJ]);
+            }
         }
+    }
+
+    private double cosPower(double w, double m) {
+        return Math.signum(Math.cos(w)) * Math.pow(Math.abs(Math.cos(w)), m);
+    }
+
+
+    private double sinPower(double w, double m) {
+        return Math.signum(Math.sin(w)) * Math.pow(Math.abs(Math.sin(w)), m);
+    }
+
+    // Функция вращения точки
+    private double[] rotate(double x, double y, double z) {
+        double sina = Math.sin(Math.toRadians(turnX));
+        double sinb = Math.sin(Math.toRadians(turnY));
+        double sinc = Math.sin(Math.toRadians(turnZ));
+        double cosa = Math.cos(Math.toRadians(turnX));
+        double cosb = Math.cos(Math.toRadians(turnY));
+        double cosc = Math.cos(Math.toRadians(turnZ));
+
+        double nx = x * cosb * cosc + y * (sina * sinb * cosc - cosa * sinc) + z * (cosa * sinb * cosc + sinc * sina);
+        double ny = x * cosb * sinc + y * (cosa * cosc + sina * sinb * sinc) + z * (z * sinb * sinc - sina * cosc);
+        double nz = -x * sinb + y * cosb * sina + z * cosb * cosa;
+        return new double[]{nx, ny, nz};
+    }
+    private void drawLine(GraphicsContext gc, double[] p1, double[] p2) {
+        gc.strokeLine(p1[0], p1[1], p2[0], p2[1]);
     }
 
     @Override
@@ -126,13 +122,36 @@ public class HelloApplication extends Application {
         Scene scene = new Scene(root, 1280, 720);
         Canvas canvas = new Canvas(1280, 720);
         GraphicsContext gc = canvas.getGraphicsContext2D();
-        TextField turnx = new TextField("x");
-        TextField turny = new TextField("y");
-        TextField turnz = new TextField("z");
-        TextField movex = new TextField("movex");
-        TextField movey = new TextField("movey");
-        TextField movez = new TextField("movez");
-        TextField sizeText = new TextField("size");
+        TextField turnx = new TextField(String.valueOf(turnX));
+        TextField turny = new TextField(String.valueOf(turnY));
+        TextField turnz = new TextField(String.valueOf(turnZ));
+        TextField movex = new TextField(String.valueOf(moveX));
+        TextField movey = new TextField(String.valueOf(moveY));
+        TextField movez = new TextField(String.valueOf(moveZ));
+        TextField sizeText = new TextField(String.valueOf(size));
+        Label tx = new Label("turn X");
+        Label ty = new Label("turn Y");
+        Label tz = new Label("turn Z");
+        Label mx = new Label("move X");
+        Label my = new Label("move Y");
+        Label mz = new Label("move Z");
+        Label sl = new Label("size");
+
+        tx.setLayoutX(400);
+        tx.setLayoutY(620);
+        ty.setLayoutX(450);
+        ty.setLayoutY(620);
+        tz.setLayoutX(500);
+        tz.setLayoutY(620);
+        mx.setLayoutX(550);
+        mx.setLayoutY(620);
+        my.setLayoutX(600);
+        my.setLayoutY(620);
+        mz.setLayoutX(650);
+        mz.setLayoutY(620);
+        sl.setLayoutX(700);
+        sl.setLayoutY(620);
+
         Button btn1 = new Button("press");
         btn1.setLayoutX(1280/2);
         btn1.setLayoutY(680);
@@ -156,7 +175,7 @@ public class HelloApplication extends Application {
                 turnX = Double.parseDouble(turnx.getText());
                 turnY = Double.parseDouble(turny.getText());
                 turnZ = Double.parseDouble(turnz.getText());
-                size = Integer.parseInt(sizeText.getText());
+                size = Double.parseDouble(sizeText.getText());
                 moveX = Double.parseDouble(movex.getText());
                 moveY = Double.parseDouble(movey.getText());
                 moveZ = Double.parseDouble(movez.getText());
@@ -164,7 +183,10 @@ public class HelloApplication extends Application {
             }
         });
         root.getChildren().add(canvas);
-        root.getChildren().addAll(btn1, turnx, turny, turnz, movex, movey, movez, sizeText);
+        root.getChildren().addAll(
+                btn1, turnx, turny, turnz, movex, movey, movez, sizeText,
+                tx, ty, tz, mx, my, mz, sl
+                );
         render3d(gc);
 
         stage.setTitle("Hello!");
