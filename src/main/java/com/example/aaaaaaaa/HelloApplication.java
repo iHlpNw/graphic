@@ -31,11 +31,11 @@ public class HelloApplication extends Application {
     private double sPower = 1; // Степень для u
     private double tPower = 1; // Степень для v
     private double size = 1; // Масштабирование
-    private double moveX = 300; // Смещение по X
-    private double moveY = 300; // Смещение по Y
+    private double moveX = 640; // Смещение по X
+    private double moveY = 360; // Смещение по Y
     private double moveZ = 0;   // Смещение по Z
-    private double turnX = 30; // Поворот по X
-    private double turnY = 30; // Поворот по Y
+    private double turnX = 0; // Поворот по X
+    private double turnY = 0; // Поворот по Y
     private double turnZ = 0;  // Поворот по Z
 
 
@@ -100,20 +100,30 @@ public class HelloApplication extends Application {
 
     // Функция вращения точки
     private double[] rotate(double x, double y, double z) {
-        double sina = Math.sin(Math.toRadians(turnX));
-        double sinb = Math.sin(Math.toRadians(turnY));
-        double sinc = Math.sin(Math.toRadians(turnZ));
-        double cosa = Math.cos(Math.toRadians(turnX));
-        double cosb = Math.cos(Math.toRadians(turnY));
-        double cosc = Math.cos(Math.toRadians(turnZ));
+        // Поворот вокруг X
+        double y1 = y * Math.cos(Math.toRadians(turnX)) - z * Math.sin(Math.toRadians(turnX));
+        double z1 = y * Math.sin(Math.toRadians(turnX)) + z * Math.cos(Math.toRadians(turnX));
 
-        double nx = x * cosb * cosc + y * (sina * sinb * cosc - cosa * sinc) + z * (cosa * sinb * cosc + sinc * sina);
-        double ny = x * cosb * sinc + y * (cosa * cosc + sina * sinb * sinc) + z * (z * sinb * sinc - sina * cosc);
-        double nz = -x * sinb + y * cosb * sina + z * cosb * cosa;
-        return new double[]{nx, ny, nz};
+        // Поворот вокруг Y
+        double x2 = x * Math.cos(Math.toRadians(turnY)) + z1 * Math.sin(Math.toRadians(turnY));
+        double z2 = -x * Math.sin(Math.toRadians(turnY)) + z1 * Math.cos(Math.toRadians(turnY));
+
+        // Поворот вокруг Z
+        double x3 = x2 * Math.cos(Math.toRadians(turnZ)) - y1 * Math.sin(Math.toRadians(turnZ));
+        double y3 = x2 * Math.sin(Math.toRadians(turnZ)) + y1 * Math.cos(Math.toRadians(turnZ));
+
+        return new double[]{x3, y3, z2};
+    }
+    private double[] project(double x, double y, double z, double d) {
+        double factor = d / (d + z); // Корректный масштаб по оси Z
+        return new double[]{x * factor, y * factor};
     }
     private void drawLine(GraphicsContext gc, double[] p1, double[] p2) {
-        gc.strokeLine(p1[0], p1[1], p2[0], p2[1]);
+        //gc.strokeLine(p1[0], p1[1], p2[0], p2[1]);
+        double d = 500; // Расстояние до экрана
+        double[] p1Projected = project(p1[0], p1[1], p1[2], d);
+        double[] p2Projected = project(p2[0], p2[1], p2[2], d);
+        gc.strokeLine(p1Projected[0], p1Projected[1], p2Projected[0], p2Projected[1]);
     }
 
     @Override
@@ -141,57 +151,58 @@ public class HelloApplication extends Application {
         Label tPar = new Label("t");
         Label sPar = new Label("s");
 
-        tx.setLayoutX(400);
-        tx.setLayoutY(620);
-        ty.setLayoutX(450);
-        ty.setLayoutY(620);
-        tz.setLayoutX(500);
-        tz.setLayoutY(620);
-        mx.setLayoutX(550);
-        mx.setLayoutY(620);
-        my.setLayoutX(600);
-        my.setLayoutY(620);
-        mz.setLayoutX(650);
-        mz.setLayoutY(620);
-        sl.setLayoutX(700);
-        sl.setLayoutY(620);
-
-        tPar.setLayoutX(800);
-        tPar.setLayoutY(620);
-        sPar.setLayoutX(850);
-        sPar.setLayoutY(620);
-
         Button btn1 = new Button("press");
-        btn1.setLayoutX(1280/2);
-        btn1.setLayoutY(680);
-        turnx.setLayoutX(400);
-        turnx.setLayoutY(640);
-        turny.setLayoutX(450);
-        turny.setLayoutY(640);
-        turnz.setLayoutX(500);
-        turnz.setLayoutY(640);
-        movex.setLayoutX(550);
-        movex.setLayoutY(640);
-        movey.setLayoutX(600);
-        movey.setLayoutY(640);
-        movez.setLayoutX(650);
-        movez.setLayoutY(640);
-        sizeText.setLayoutX(700);
-        sizeText.setLayoutY(640);
-        sizeText.setMaxWidth(50);
-        turnx.setMaxWidth(50);
-        turny.setMaxWidth(50);
-        turnz.setMaxWidth(50);
-        movex.setMaxWidth(50);
-        movey.setMaxWidth(50);
-        movez.setMaxWidth(50);
-        tParam.setMaxWidth(50);
-        tParam.setLayoutX(800);
-        tParam.setLayoutY(640);
-        sParam.setMaxWidth(50);
-        sParam.setLayoutX(850);
-        sParam.setLayoutY(640);
+        {
+            tx.setLayoutX(400);
+            tx.setLayoutY(620);
+            ty.setLayoutX(450);
+            ty.setLayoutY(620);
+            tz.setLayoutX(500);
+            tz.setLayoutY(620);
+            mx.setLayoutX(550);
+            mx.setLayoutY(620);
+            my.setLayoutX(600);
+            my.setLayoutY(620);
+            mz.setLayoutX(650);
+            mz.setLayoutY(620);
+            sl.setLayoutX(700);
+            sl.setLayoutY(620);
 
+            tPar.setLayoutX(800);
+            tPar.setLayoutY(620);
+            sPar.setLayoutX(850);
+            sPar.setLayoutY(620);
+
+            btn1.setLayoutX(1280 / 2);
+            btn1.setLayoutY(680);
+            turnx.setLayoutX(400);
+            turnx.setLayoutY(640);
+            turny.setLayoutX(450);
+            turny.setLayoutY(640);
+            turnz.setLayoutX(500);
+            turnz.setLayoutY(640);
+            movex.setLayoutX(550);
+            movex.setLayoutY(640);
+            movey.setLayoutX(600);
+            movey.setLayoutY(640);
+            movez.setLayoutX(650);
+            movez.setLayoutY(640);
+            sizeText.setLayoutX(700);
+            sizeText.setLayoutY(640);
+            sizeText.setMaxWidth(50);
+            turnx.setMaxWidth(50);
+            turny.setMaxWidth(50);
+            turnz.setMaxWidth(50);
+            movex.setMaxWidth(50);
+            movey.setMaxWidth(50);
+            movez.setMaxWidth(50);
+            tParam.setMaxWidth(50);
+            tParam.setLayoutX(800);
+            tParam.setLayoutY(640);
+            sParam.setMaxWidth(50);
+            sParam.setLayoutX(850);
+            sParam.setLayoutY(640);
+        }
 
 
         btn1.setOnAction(new EventHandler<ActionEvent>() {
