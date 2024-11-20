@@ -1,28 +1,24 @@
 package com.example.aaaaaaaa;
 
 import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.Point2D;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.image.ImageView;
-import javafx.scene.image.PixelWriter;
-import javafx.scene.image.WritableImage;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
-import java.util.Arrays;
 
 import java.io.IOException;
 
 public class HelloApplication extends Application {
+    final double ScreenX = 640;  // Центр экрана по оси X
+    final double ScreenY = 360;  // Центр экрана по оси Y
+    final double distance = 500; // Расстояние до экрана по Z'
     private int detailU = 60; // Количество точек по оси u
     private int detailV = 60; // Количество точек по оси v
     private double a = 100; // Параметр a
@@ -31,12 +27,12 @@ public class HelloApplication extends Application {
     private double sPower = 1; // Степень для u
     private double tPower = 1; // Степень для v
     private double size = 1; // Масштабирование
-    private double moveX = 640; // Смещение по X
-    private double moveY = 360; // Смещение по Y
+    private double moveX = 0; // Смещение по X
+    private double moveY = 0; // Смещение по Y
     private double moveZ = 0;   // Смещение по Z
-    private double turnX = 0; // Поворот по X
-    private double turnY = 0; // Поворот по Y
-    private double turnZ = 0;  // Поворот по Z
+    private double turnX = 10; // Поворот по X
+    private double turnY = 30; // Поворот по Y
+    private double turnZ = 40;  // Поворот по Z
 
 
     public void clear(GraphicsContext gc){
@@ -76,7 +72,7 @@ public class HelloApplication extends Application {
             }
         }
 
-        // Рисование линий
+        // Отрисовка линий
         for (int i = 0; i < detailU; i++) {
             for (int j = 0; j < detailV; j++) {
                 int nextI = (i + 1) % detailU;
@@ -92,7 +88,6 @@ public class HelloApplication extends Application {
     private double cosPower(double w, double m) {
         return Math.signum(Math.cos(w)) * Math.pow(Math.abs(Math.cos(w)), m);
     }
-
 
     private double sinPower(double w, double m) {
         return Math.signum(Math.sin(w)) * Math.pow(Math.abs(Math.sin(w)), m);
@@ -114,15 +109,13 @@ public class HelloApplication extends Application {
 
         return new double[]{x3, y3, z2};
     }
-    private double[] project(double x, double y, double z, double d) {
-        double factor = d / (d + z); // Корректный масштаб по оси Z
-        return new double[]{x * factor, y * factor};
+    private double[] project(double x, double y, double z) {
+        double factor = distance / (distance + z); // Корректный масштаб по оси Z
+        return new double[]{ScreenX + x * factor, ScreenY + y * factor};
     }
     private void drawLine(GraphicsContext gc, double[] p1, double[] p2) {
-        //gc.strokeLine(p1[0], p1[1], p2[0], p2[1]);
-        double d = 500; // Расстояние до экрана
-        double[] p1Projected = project(p1[0], p1[1], p1[2], d);
-        double[] p2Projected = project(p2[0], p2[1], p2[2], d);
+        double[] p1Projected = project(p1[0], p1[1], p1[2]);
+        double[] p2Projected = project(p2[0], p2[1], p2[2]);
         gc.strokeLine(p1Projected[0], p1Projected[1], p2Projected[0], p2Projected[1]);
     }
 
@@ -152,6 +145,7 @@ public class HelloApplication extends Application {
         Label sPar = new Label("s");
 
         Button btn1 = new Button("press");
+        // Задаём координаты текстовым полям
         {
             tx.setLayoutX(400);
             tx.setLayoutY(620);
@@ -222,9 +216,9 @@ public class HelloApplication extends Application {
         });
         root.getChildren().add(canvas);
         root.getChildren().addAll(
-                btn1, turnx, turny, turnz, movex, movey, movez, sizeText,
-                tx, ty, tz, mx, my, mz, sl,
-                tParam, sParam, tPar, sPar
+                btn1, turnx, turny, turnz, movex, movey, movez, sizeText, // TextFields
+                tx, ty, tz, mx, my, mz, sl, // Labels
+                tParam, sParam, tPar, sPar // TextFields & Labels для параметров супертороида
                 );
         render3d(gc);
 
